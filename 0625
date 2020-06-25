@@ -1,0 +1,458 @@
+3-4 操作系统(linux)
+1-2 shell编程
+==================
+rhel 5.4
+http://rhel.ieesee.net/uingei/rhel-server-5.4-i386-dvd.iso
+vmware 15
+http://down-ww3.7down.net/pcdown/soft/xiazai/vmware-pro15.zip2.
+网络设置
+	a.命令设置
+		setup--xxxx--service network restart
+	b.临时设置IP地址(重启后失效)
+		ifconfig eth0 192.168.8.55
+	c.配置文件修改IP信息(重启网络后生效)
+		vim /etc/sysconfig/network-scripts/ifcfg-eth0
+			DEVICE=eth0                  	设备名称
+			BOOTPROTO=static                获取IP的方式(dhcp:动态分配;static 静态设置)
+			HWADDR=00:0c:29:26:ed:c6        网卡mac地址
+			ONBOOT=yes                      网卡是否随开机启动而启动
+			NETMASK=255.255.254.0           子网掩码
+			IPADDR=192.168.4.44             IP地址
+			TYPE=Ethernet                   上网类型
+		service network restart
+3.主机名设置
+	a.查看主机名
+		hostname
+	b.临时设置主机名(重启系统后失效)
+		hostname heygor.com.cn
+	c.永久设置主机名(重启系统后生效)
+		vim /etc/sysconfig/network
+		HOSTNAME=heygor.com.cn
+	init 6重启系统
+4.主机名绑定
+	vim /etc/hosts
+	追加一行
+	192.168.7.213   heygor.com.cn
+5.selinux
+	a.查看selinux状态
+		getenforce
+	b.修改selinux配置文件
+		vim /etc/selinux/config
+			SELINUX=disabled
+	c.临时修改selinux关闭
+		setenfoce 0
+6.防火墙
+	service iptables status
+		查看防火墙的状态
+	service iptables stop
+		关闭防火墙
+	service iptables start
+		启动防火墙
+
+7.包、压缩文件、压缩包
+	a. 包（tar）
+		打包，创建的包文件通常以.tar结尾
+		tar -cvf test.tar Desktop install.log*
+			创建包文件test.tar，打包内容Desktop目录和install.log开头的文件
+		tar -tvf test.tar
+			查看包文件中文件属性信息
+		tar -xvf test.tar
+			解包包文件到当前目录下
+		tar -xvf test.tar -C /opt/
+			解包包文件到指定目录下(需要加-C)、
+	b.压缩文件（gzip）
+		du -sh install.log
+			查看install.log文件大小
+	  	gzip install.log
+	  		压缩文件install.log
+	  	gzip -l install.log.gz
+	  		查看压缩文件属性信息
+	  	gzip -d install.log.gz
+	  		解压压缩文件install.log.gz
+	c.压缩包
+		先打包，后压缩
+		tar -cvf test1.tar install.log*
+		gzip test1.tar
+		创建的压缩包文件以.tar.gz结尾或者以.tgz结尾
+		tar -czvf test1.tgz install.log*
+			创建压缩包test1.tgz，打包压缩内容为install.log开头的文件
+		tar -tzvf test1.tgz
+		 	查看压缩包中文件属性信息
+		tar -xzvf test1.tgz
+			解压压缩包文件test1.tgz
+8.权限和用户
+	a.用户
+		/etc/passwd 
+			用户配置文件
+		/etc/shadow
+			用户密码配置文件
+		/etc/group
+			用户的组配置文件
+		创建用户
+			useradd simon
+				创建用户simon
+			passwd simon
+				给simon用户设置密码
+		修改用户
+			usermod -L simon
+				锁定simon用户
+			usermod -U simon
+				解锁simon用户
+		删除用户
+			userdel -r simon
+	b.权限
+		1>查看文件属性信息
+			ll install.log
+			-rw-r--r-- 1 root root 32156 06-16 09:28 install.log
+			1:文件类型   d:目录  -:普通文件
+			2-10:文件的权限
+			11:文件节点
+			12:文件拥有者
+			13:文件拥有组
+			14:文件大小
+			15:最后修改时间
+			16:文件名字
+		2>权限分类
+			r:读
+				目录(列表)
+				文件(查看文件内容)
+			w:写
+				目录(创建、重命名、删除文件)
+				文件(修改文件内容)
+			x:执行
+				目录(进入)
+				文件(可执行，通常是二进制文件或者脚本文件)
+		3.权限的分组
+			rw-        r--       r--
+			拥有者     拥有组     其他人
+		4.系统判断权限的过程
+			id heygor
+				查看heygor用户的组信息
+			a.判断heygor用户是否是文件的拥有者，如果是文件的拥有者，赋予相应权限
+			b.判断heygor用户是否是文件拥有组成员，如果是，赋予相应权限
+			c.如果两个都不是，赋予其他人权限
+		5.修改权限的方式
+			chmod 直接修改权限
+				字符方式
+					u   拥有者
+					g 	拥有组
+					o 	其他人
+					a   所有人
+					chmod u+x install.log
+						拥有者增加执行权限
+					chmod g+x,o+x install.log
+						拥有组和其他人增加执行权限
+					chmod a-x install.log
+						所有人取消执行权限
+				数字方式
+					r:4
+					w:2
+					x:1
+					-:0
+					chmod 777 install.log
+						所有用户拥有读写执行权限
+					chmod 000 install.log
+						所有用户没有任何权限
+			chown 通过修改文件属主来修改权限
+				chown heygor install.log
+					修改文件拥有者为heygor
+				chown :bin install.log
+					修改文件拥有组为bin
+				chown root:root install.log
+					修改文件拥有者和拥有组为root
+9.搜索和管道
+	a.搜索
+		find    	搜索文件
+			find /etc/ -name conf
+				搜索/etc目录下名字是conf的文件
+			find /etc/ -name *.conf
+				搜索/etc目录下名字是.conf结尾的文件
+		locate      搜索文件
+			locate  passwd 
+				系统中搜索passwd文件
+		updatedb 	刷新系统数据库
+		grep        搜索内容
+			grep root /etc/passwd
+				搜索含有root关键字的行
+			grep ^r /etc/passwd
+				搜索以r开头的行
+			grep bash$ /etc/passwd
+				搜索以bash结尾的行
+	b.管道
+		前面的输出作为后面的输入
+		ls /etc/ | grep ^a
+			/etc目录下搜索a开头的文件
+		cat /etc/passwd |grep ^r
+			/etc/passwd搜索r开头内容
+		head -7 install.log | tail -1
+			查看文件第7行内容
+10.管理命令
+	top
+		监控系统资源
+	pidof sshd
+		查看sshd进程id
+	kill 
+		-9    pid    暴力杀
+		-15   pid    温柔杀
+	ps -ef  查看系统所有进程
+		ps -ef |grep httpd   查看apache进程是否正常运行
+		ps -ef |grep sshd    查看sshd进程是否正常运行
+		ps -ef |grep mysqld  查看mysqld进程是否正常运行
+		ps -ef |grep tomcat  查看tomat进程是否正常运行
+	netstat -an 查看系统开放的端口信息
+		apache/nginx/iis   80
+		tomcat             8080
+		mysql              3306
+		oracle             1521
+		ssh                22
+	lsof -i:22
+		查看22号端口的链接信息
+	free -m
+		查看内存信息
+	df -h
+		查看磁盘使用率
+	vmstat 
+		监控系统资源
+	mount
+		查看系统挂载信息
+	chkconfig 
+		chkconfig --list
+			查看开机启动任务列表
+		chkconfig --level 35 iptables off
+	init
+		init 0  关机
+		init 3  进入到字符模式
+		init 5  进入到图形模式
+		init 6  重启
+		linux运行级别
+		vim /etc/inittab
+	ifconfig
+11.rhel下软件的安装
+	a.安装方式
+		手动安装(rpm安装)
+		yum自动安装
+		二进制文件安装
+		源码安装
+	b.软件安装基础
+		常用软件都在光盘的Server目录下
+		如果需要下载最新软件，建议到官网
+		type是iso9660的对应硬件就是光驱等
+		rhel的软件安装包都是以.rpm结尾
+	c.安装vsftpd服务
+		0>
+			安装操作系统
+			设置网络
+			设置主机名
+			绑定主机名
+			关闭selinux
+			关闭防火墙
+		1>加载光驱
+			右键虚拟机标签--设置--cd\dvd--[已连接、启动时链接]--使用iso映像文件--找到光盘--确定
+		2>输入mount命令查看type是iso9660的对应的目录(通过该目录进行光盘的访问)
+			mount |grep iso
+		3>进入到光盘的Server目录下
+			 cd /media/RHEL_5.4\ i386\ DVD/Server/
+		4>搜索vsftpd相关软件
+ 			ls |grep vsftpd
+		5>安装vsftpd软件
+			rpm -ivh vsftpd-2.0.5-16.el5.i386.rpm
+		6>启动vsftpd服务
+			service vsftpd start
+		7>测试
+			浏览器中输入ftp://linux的IP，如果出现pub目录说明安装完毕
+			如果需要共享其他文件，把文件复制到/var/ftp/
+		8>补充:win下映射网络磁盘
+1.软件的自动安装
+	rpm安装需要注意顺序
+	自动安装默认自己解决依赖包问题
+	光盘类型挂载必须加参数-o loop
+	a.yum的安装配置
+		1>加载光驱
+			标签--设置--cd\dvd--使用iso映像文件--确定
+		2>创建一个空目录用于挂载
+			mkdir /yum
+		3>挂载光驱
+			mount -o loop /dev/scd0 /yum
+		4>配置yum
+			vim /etc/yum.repos.d/rhel-debuginfo.repo
+			[test]                        分组名称
+			name=test                     名字
+			baseurl=file:///yum/Server    系统到哪里去找软件
+			enabled=1                     是否开启自动安装，1开启，0关闭
+			gpgcheck=0                    是否检查光盘包,0不检查，1，检查
+		5>清理yum缓存
+			yum clean all
+		6>查看可以安装软件列表
+			yum list
+		7>安装mysql相关软件
+			yum install mysql* -y
+		8>启动mysql服务
+			service mysqld start
+		9>测试
+			ps -ef |grep mysqld
+			netstat -an |grep 3306
+		10>补充
+			0.0.0.0  任意IP
+			127.0.0.1
+			localhost 电脑本机
+	b.ecshop网店项目部署
+		ecshop环境
+			开发语言:		php
+			web服务器:		apache
+			数据库服务器:		mysql
+		1>安装操作系统
+		2>配置IP、主机名、绑定主机名
+		3>关闭防火墙、selinux
+		4>配置好yum
+		5>安装php相关组件
+			yum install php* -y
+		6>安装apache相关组件
+			yum install http* -y
+		7>安装mysql相关组件
+			yum install mysql* -y
+		8>测试
+			启动mysql服务
+				service mysqld start
+			启动apache服务
+				service	httpd restart
+			ps -ef |grep httpd
+			ps -ef |grep mysqld
+			netstat -an |grep 3306
+			netstat -an |grep 80
+		9>win下载ecshop压缩包，并且解压
+		10>通过winscp(win和linux共享文件工具)把解压后的文件夹传入linux中/var/www/html下
+		11>赋予ecshop1目录相应权限
+			chmod 777 -R /var/www/html/ecshop1
+		12>通过浏览器访问http://linux的IP/ecshop1按照提示进行安装
+			配置系统时候注意
+			数据库主机：   localhost
+			端口号    :    3306
+			用户名    :    root
+			密码      :    空的
+			数据库名  ：    test
+
+2.二进制文件的安装和部署
+	a.mongodb的下载和安装
+		1>下载mongodb软件
+			操作系统类型
+			操作系统位数
+				i386 i686 	32位操作系统
+				x86_64 x64  64位操作系统
+		2>把下载好的压缩包传入linux中
+		3>解压压缩包
+			tar -xzvf mongodb-linux-i686-2.4.9.tgz
+		4>设置环境变量(让系统能找到mongodb的命令)
+			常用配置文件
+				/etc/profile 	全局配置
+				~/.bash_profile 用户配置(推荐)
+			在PATH后面增加mongodb的bin目录的路径
+				:/root/mongodb/bin
+		5>使环境变量生效
+			source ~/.bash_profile 
+		6>启动mongodb服务
+			mkdir /opt/data  创建一个目录用于存储mongodb数据
+			mongod --dbpath /opt/data --logpath /opt/data/mongo.log --fork
+			mongod mongodb的主服务
+			--dbpath  mongodb的存放数据的路径
+			--logpath mongodb的日志文件存放位置
+			--fork    后台运行
+		7>测试mongodb
+			ps -ef |grep mongod
+			netstat -an |grep 27017
+	b.tenroder项目的部署
+		1>安装配置jdk
+			jdk java的开发环境
+			jre java的运行环境
+			11>jdk下载(建议oracle)
+				操作系统类型
+				操作系统位数
+			12>把jdk压缩包传入linux中
+			13>查看linux中jdk的版本
+				java -version
+			14>解压jdk压缩包
+				tar -xzvf jdk-7u7-linux-i586.tar.gz
+			15>设置环境变量
+				vim ~/.bash_profile
+				新增
+				JAVA_HOME=/root/jdk   #jdk解压的位置
+				在PATH中最前面增加jdk和jre的bin路径
+				JAVA_HOME=/root/jdk1.7
+				PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH:$HOME/bin:/root/mongodb/bin
+			16>让环境变量生效
+				source .bash_profile
+			17>查看linux中jdk的版本
+				java -version
+		2>tomcat的安装和配置
+			21>下载tomcat压缩包
+				https://tomcat.apache.org/download-70.cgi
+			22>把tomcat传入linux中
+			23>解压tomcat压缩包
+				tar -xzvf apache-tomcat-7.0.96.tar.gz
+			24>tomcat目录简介
+				bin 	tomcat的命令所在位置
+				conf    tomcat的配置文件所在位置
+				lib     tomcat的库文件所在位置
+				logs    tomcat的日志存放的位置
+				webapps  tomcat项目源码部署位置
+				temp    tomcat存放临时文件的位置
+			25>启动tomcat
+				进入到tomcat的bin目录
+				 cd /root/apache-tomcat-7.0.96/bin/
+				执行startup.sh
+				 ./startup.sh
+			26>测试
+				ps -ef |grep tomcat
+				netstata -an |grep 8080
+				浏览器中输入linux的ip:8080
+		3>tenorder项目的部署
+			------------------------
+			开发语言:java
+			web服务器:tomcat
+			数据库服务器:mysql
+			------------------------
+			31>安装配置好jdk
+			32>安装配置好tomcat
+			33>安装配置好mysql
+			34>下载并且解压tenorder项目
+			35>删除tomcat中webspps中所有文件
+				rm -rf /root/apache-tomcat-7.0.96/webapps/*
+			36>把解压后的tenorder文件夹传入tomcat的webapps中
+			37>导入数据文件
+				@0.目录切换到tenorder.sql所在目录
+					 cd /root/apache-tomcat-7.0.96/webapps/tenorder/
+				@1.设置mysql的管理员root的密码
+					mysqladmin -u root password 'test'
+					设置mysql中root用户的登录密码为test
+				@2.登录mysql
+					mysql -u root -p
+				@3.创建数据库
+					create database ten;
+					创建数据库，名字为ten
+				@4.切换数据库
+					use ten;
+					当前数据库切换为ten
+				@5.导入tenorder.sql文件
+					source tenorder.sql;
+				@6.退出mysql
+					exit
+			38>修改数据库的信息
+				根据安装文档提示进行操作
+				vim /root/apache-tomcat-7.0.96/webapps/tenorder/WEB-INF/classes/database.properties
+				@1.修改数据库用户名
+				@2.修改用户登录密码
+				@3.修改数据库IP
+				@4.修改数据库名字
+			39>重启tomcat
+				@1.进入到tomcat的bin目录
+					cd /root/apache-tomcat-7.0.96/bin/
+				@2.执行shutdown.sh
+					./shutdown.sh
+				@3.执行startup.sh
+					./startup.sh
+			40>访问
+				浏览器中输入前台地址:
+				linux的IP:8080/tenorder
+				浏览器中输入后台地址:
+				linux的IP:8080/tenorder/admin
+					admin
+					admin
