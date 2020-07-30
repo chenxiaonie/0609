@@ -1,0 +1,23 @@
+class User{
+//懒汉式
+//构造一个私有的静态对象
+private static User user;
+//构造私有的构造方法
+privite User(){}
+//提供公有的供外界获取对象的静态方法
+public static User getUser(){
+    if(user == null){
+    user = new User();
+    }
+    return user;
+}
+
+//2)饿汉式
+//构造私有的对象
+private static User user= new User();
+//创建私有的静态方法
+private User(){}
+//创建公有的供外界访问的静态方法
+public static User getUser(){
+        return user;
+}
